@@ -46,7 +46,7 @@ router.post('/signup', (req, res, next) => {
                         lastName: req.body.lastName,
                         email: req.body.email,
                         password: hash,
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date()
                     });
                 
                     admin.save()
