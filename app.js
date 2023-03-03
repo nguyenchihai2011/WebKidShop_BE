@@ -5,7 +5,8 @@ const cors = require('cors');
 const authenticate = require('./api/middleware/authenticate');
 
 mongoose.connect(
-  "mongodb+srv://bhnhat1709:anhlabeo1@cluster0.k80jgme.mongodb.net/?retryWrites=true&w=majority",
+  "mongodb+srv://bhnhat1709:anhlabeo1@cluster0.03khnuw.mongodb.net/?retryWrites=true&w=majority",
+  //Change this URL to test
   {
     useNewUrlParser: true,
     useFindAndModify: false,
