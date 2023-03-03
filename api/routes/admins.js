@@ -34,6 +34,7 @@ router.post('/signup', (req, res, next) => {
             });
         }else{
             bcrypt.hash(req.body.password, 10, function(err, hash) {
+                // Store hash in your password DB.
                 if(err){
                     return res.status(500).json({
                         error: err
