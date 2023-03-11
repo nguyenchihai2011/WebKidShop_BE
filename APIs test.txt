@@ -1,0 +1,54 @@
+Admin Signup 
+-------------------------------------
+Request Type : POST
+API : http://localhost:5000/admin/signup
+{
+        "firstName":  "Bui",
+        "lastName": "Nhat",
+        "email": "bhnhat1709@gmail.com",
+        "password": "12345"
+}
+
+Admin Login
+--------------------------------------
+Request Type: POST
+API: http://localhost:5000/admin/login
+{
+        "email": "bhnhat1709@gmail.com",
+        "password": "12345"
+}
+
+Add New Product
+--------------------------------------
+Request Type: POST,
+API: http://localhost:5000/products/create
+
+Headers:
+
+auth-token : token login
+Content-Type : application/json
+
+RAW JSON:
+{
+        "name: "Red t shirt in check",
+        "price: "21",
+        "stock: "100",
+        "description: "Its a very good t shirt",
+        "productPic": [
+                {img: LINK}
+        ],
+        "keyword": "red t shirt check t shirt",
+        "category": "ID category",
+        "createdBy": "ID admin login"
+}
+
+Add New category
+--------------------------------------
+Request Type: POST
+API: http://localhost:5000/category
+{
+        "name": "Áo thun",
+        "slug": "ao-thun",
+        "parent": "......", // hoặc xóa đi để trống
+        "createdBy": "ID admin login"
+}
