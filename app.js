@@ -21,7 +21,7 @@ app.use(
   })
 );
 app.use(cors());
-app.get("/", (req, res) => res.send("Hello world!"));
+app.get("/", (req, res) => res.send("Hello world"));
 app.use("/api/category", categoryRoute);
 app.use("/api/producttype", producttypeRoute);
 app.use("/api/brand", brandRoute);
