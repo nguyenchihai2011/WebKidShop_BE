@@ -8,7 +8,7 @@ router.get("/", (req, res) => {
   Brand.find()
     .then((brand) => res.json(brand))
     .catch((err) => {
-      res.status(404).json({ nobrandsfound: "No Brands found" });
+      res.status(404).json({ NoBrandsFound: "No Brands found" });
     });
 });
 
@@ -16,7 +16,7 @@ router.get("/:id", (req, res) => {
   Brand.findById(req.params.id)
     .then((brand) => res.json(brand))
     .catch((err) => {
-      res.status(404).json({ nobrandsfount: "No brands found" });
+      res.status(404).json({ NoBrandsFound: "No brands found" });
     });
 });
 
