@@ -5,7 +5,7 @@ const connectDB = require("./config/db");
 
 const categoryRoute = require("./api/routes/category");
 const productTypeRoute = require("./api/routes/productType");
-const brandRoute = require("./api/routes/brand");
+const brandRoute = require("./api/routes/brands");
 const promotionRoute = require("./api/routes/promotion");
 
 const app = express();
