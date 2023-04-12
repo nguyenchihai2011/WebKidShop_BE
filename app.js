@@ -9,7 +9,6 @@ const brandRoute = require("./api/routes/brand");
 const promotionRoute = require("./api/routes/promotion");
 
 const app = express();
-
 // Connect Database
 connectDB();
 
