@@ -6,6 +6,10 @@ const brandSchema = mongoose.Schema({
     type: String,
     require: true,
   },
+  fileLogo: {
+    data: Buffer,
+    contentType: String,
+  },
   name: {
     type: String,
     require: true,

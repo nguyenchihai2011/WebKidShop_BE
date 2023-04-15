@@ -52,7 +52,6 @@ router.post("/signup", (req, res, next) => {
 
 router.post("/login", (req, res, next) => {
   User.findOne({ email: req.body.email })
-    .select("_id firstName lastName email password")
     .exec()
     .then((user) => {
       if (user) {
@@ -75,15 +74,13 @@ router.post("/login", (req, res, next) => {
                   });
                 } else {
                   res.status(200).json({
-                    message: {
-                      user: {
-                        userId: user._id,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        email: user.email,
-                      },
-                      token: token,
+                    user: {
+                      userId: user._id,
+                      firstName: user.firstName,
+                      lastName: user.lastName,
+                      email: user.email,
                     },
+                    token: token,
                   });
                 }
               });

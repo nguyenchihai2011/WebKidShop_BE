@@ -1,8 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const multer = require("multer");
 
 const Brand = require("../models/brand");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + "-" + Date.now());
+  },
+});
+
+const upload = multer({ storage: storage });
 
 router.get("/", (req, res) => {
   Brand.find()
@@ -20,7 +32,7 @@ router.get("/:id", (req, res) => {
     });
 });
 
-router.post("/", (req, res) => {
+router.post("/", upload.single("image"), (req, res) => {
   const brand = new Brand({
     _id: mongoose.Types.ObjectId(),
     logo: req.body.logo,

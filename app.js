@@ -7,6 +7,8 @@ const categoryRoute = require("./api/routes/category");
 const producttypeRoute = require("./api/routes/producttype");
 const brandRoute = require("./api/routes/brand");
 const promotionRoute = require("./api/routes/promotion");
+const productRoute = require("./api/routes/products");
+const usersRoute = require("./api/routes/users");
 
 const app = express();
 
@@ -20,12 +22,15 @@ app.use(
     extended: true,
   })
 );
+
 app.use(cors());
 app.get("/", (req, res) => res.send("Hello world"));
 app.use("/api/category", categoryRoute);
 app.use("/api/producttype", producttypeRoute);
 app.use("/api/brand", brandRoute);
 app.use("/api/promotion", promotionRoute);
+app.use("/api/product", productRoute);
+app.use("/api/user", usersRoute);
 
 const port = process.env.PORT || 8080;
 
