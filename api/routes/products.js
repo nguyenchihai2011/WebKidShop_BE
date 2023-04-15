@@ -29,9 +29,9 @@ router.post("/", (req, res, next) => {
         message: product,
       });
     })
-    .catch((er) => {
+    .catch((err) => {
       res.status(500).json({
-        error: er,
+        error: err,
       });
     });
 });

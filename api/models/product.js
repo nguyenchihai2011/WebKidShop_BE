@@ -8,7 +8,7 @@ const productSchema = mongoose.Schema({
   stock: { type: Number, required: true },
   description: { type: String },
   productPic: { type: String, require: true },
-  //   keyword: { type: String },
+  keyword: { type: String },
   arrivalDate: { type: Date, require: true },
   brand: {
     type: mongoose.Schema.Types.ObjectId,
