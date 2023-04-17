@@ -1,86 +1,64 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const Brand = require("../models/brand");
 const router = express.Router();
+const mongoose = require("mongoose");
+const multer = require("multer");
 
-// Tìm kiếm một Brand bằng điều kiện query
-router.get("/", async (req, res) => {
-  try {
-    const { logo, name, description } = req.query;
-    const query = {};
-    if (logo) query.logo = logo;
-    if (name) query.name = name;
-    if (description) query.description = description;
-    const brands = await Brand.findOne(query);
-    if (!brands) {
-      return res.status(404).json({ message: "Can not find Brand" });
-    }
-    res.json({ message: "Found the brand", data: brands });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+const Brand = require("../models/brand");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.fieldName + "-" + Date.now());
+  },
 });
 
-// Tìm kiếm một Brand bằng ID
-router.get("/:id", async (req, res) => {
-  try {
-    const brand = await Brand.findById(req.params.id);
-    if (!brand) {
-      return res.status(404).json({ message: "Can not find Brand" });
-    }
-    res.json({ message: "Found the brand in database", data: brand });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+const upload = multer({ storage: storage });
 
-// Thêm một Brand mới
-router.post("/", async (req, res) => {
-  const { logo, name, description } = req.body;
-  try {
-    const brand = new Brand({
-      _id: new mongoose.Types.ObjectId(),
-      logo,
-      name,
-      description,
+router.get("/", (req, res) => {
+  Brand.find()
+    .then((brand) => res.json(brand))
+    .catch((err) => {
+      res.status(404).json({ NoBrandsFound: "No Brands found" });
     });
-    await brand.save();
-    res.status(201).json({message: 'Create brand successfully', data:brand});
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
 });
 
-// Cập nhật thông tin một Brand
-router.patch("/:id", async (req, res) => {
-  try {
-    const brand = await Brand.findById(req.params.id);
-    if (!brand) {
-      return res.status(404).json({ message: "Can not find Brand" });
-    }
-    const { logo, name, description } = req.body;
-    if (logo) brand.logo = logo;
-    if (name) brand.name = name;
-    if (description) brand.description = description;
-    await brand.save();
-    res.json({message: 'Update brand successfully', data:brand});
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+router.get("/:id", (req, res) => {
+  Brand.findById(req.params.id)
+    .then((brand) => res.json(brand))
+    .catch((err) => {
+      res.status(404).json({ NoBrandsFound: "No brands found" });
+    });
 });
 
-// Xóa một Brand
-router.delete("/:id", async (req, res) => {
-  try {
-    const brand = await Brand.findById(req.params.id);
-    if (!brand) {
-      return res.status(404).json({ message: "Can not find Brand" });
-    }
-    await brand.remove();
-    res.json({ message: "Brand deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+router.post("/", upload.single("image"), (req, res) => {
+  const brand = new Brand({
+    _id: mongoose.Types.ObjectId(),
+    logo: req.body.logo,
+    name: req.body.name,
+    description: req.body.description,
+  });
+  return brand
+    .save()
+    .then((brand) => res.json({ msg: "Brand added successfully" }))
+    .catch((err) => {
+      res.status(404).json({ error: "Unable to add this brand" });
+    });
+});
+
+router.put("/:id", (req, res) => {
+  Brand.findByIdAndUpdate(req.params.id, req.body)
+    .then((brand) => res.json({ msg: "Updated successfully" }))
+    .catch((err) =>
+      res.status(400).json({ error: "Unable to update the Database" })
+    );
+});
+
+router.delete("/:id", (req, res) => {
+  Brand.findByIdAndRemove(req.params.id, req.body)
+    .then((brand) => res.json({ mgs: "Brand entry deleted successfully" }))
+    .catch((err) => res.status(404).json({ error: "No such a brand" }));
 });
 
 module.exports = router;

@@ -2,52 +2,52 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 
-const Producttype = require("../models/productType");
+const ProductType = require("../models/productType");
 
 router.get("/", (req, res) => {
-  Producttype.find()
-    .then((producttype) => res.json(producttype))
+  ProductType.find()
+    .then((productType) => res.json(productType))
     .catch((err) =>
-      res.status(404).json({ noproducttypesfound: "No Producttypes found" })
+      res.status(404).json({ NoProductTypesFound: "No ProductTypes found" })
     );
 });
 
 router.get("/:id", (req, res) => {
-  Producttype.findById(req.params.id)
-    .then((producttype) => res.json(producttype))
+  ProductType.findById(req.params.id)
+    .then((productType) => res.json(productType))
     .catch((err) =>
-      res.status(404).json({ noproducttypesfound: "No Producttypes found" })
+      res.status(404).json({ NoProductTypesFound: "No ProductTypes found" })
     );
 });
 
 router.post("/", (req, res) => {
-  const producttype = new Producttype({
+  const productType = new ProductType({
     _id: mongoose.Types.ObjectId(),
     name: req.body.name,
     description: req.body.description,
   });
-  return producttype
+  return productType
     .save()
-    .then((producttype) => res.json({ msg: "Producttype added successfully" }))
+    .then((productType) => res.json({ msg: "ProductType added successfully" }))
     .catch((err) =>
-      res.status(400).json({ error: "Unable to add this producttype" })
+      res.status(400).json({ error: "Unable to add this productType" })
     );
 });
 
 router.put("/:id", (req, res) => {
-  Producttype.findByIdAndUpdate(req.params.id, req.body)
-    .then((producttype) => res.json({ msg: "Updated successfully" }))
+  ProductType.findByIdAndUpdate(req.params.id, req.body)
+    .then((productType) => res.json({ msg: "Updated successfully" }))
     .catch((err) =>
       res.status(400).json({ error: "Unable to update the Database" })
     );
 });
 
 router.delete("/:id", (req, res) => {
-  Producttype.findByIdAndRemove(req.params.id, req.body)
-    .then((producttype) =>
-      res.json({ mgs: "Producttype entry deleted successfully" })
+  ProductType.findByIdAndRemove(req.params.id, req.body)
+    .then((productType) =>
+      res.json({ mgs: "ProductType entry deleted successfully" })
     )
-    .catch((err) => res.status(404).json({ error: "No such a producttype" }));
+    .catch((err) => res.status(404).json({ error: "No such a productType" }));
 });
 
 module.exports = router;

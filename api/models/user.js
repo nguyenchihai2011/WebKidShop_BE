@@ -15,12 +15,9 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  contact: { type: String },
-  profilePic: { type: String },
+  address: { type: String, required: true },
   createdAt: Date,
   updatedAt: Date,
 });
 
 module.exports = mongoose.model("User", userSchema);
-
-module.exports = mongoose.model('User', userSchema);
