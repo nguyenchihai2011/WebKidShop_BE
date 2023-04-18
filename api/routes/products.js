@@ -50,7 +50,7 @@ router.put("/:productId", async (req, res) => {
     if (!updatedProduct) {
       return res.status(404).json({ message: "Can not find product" });
     }
-    res.status(200).json({ message: "Product updated successfully" }, updatedProduct);
+    res.status(200).json(updatedProduct);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
