@@ -2,11 +2,8 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const authenticate = require("../middleware/authenticate");
 
 const User = require("../models/user");
-const UserAddress = require("../models/userAddress");
 
 router.post("/signup", (req, res, next) => {
   User.findOne({ email: req.body.email })
@@ -61,30 +58,7 @@ router.post("/login", (req, res, next) => {
               message: "Login Failed",
             });
           } else {
-            if (result) {
-              const payload = {
-                userId: user._id,
-                iat: Math.floor(Date.now() / 1000) - 30,
-                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 60 * 24,
-              };
-              jwt.sign(payload, "mysecretkey", (err, token) => {
-                if (err) {
-                  return res.status(500).JSON({
-                    message: "Authentication Failed",
-                  });
-                } else {
-                  res.status(200).json({
-                    user: {
-                      userId: user._id,
-                      firstName: user.firstName,
-                      lastName: user.lastName,
-                      email: user.email,
-                    },
-                    token: token,
-                  });
-                }
-              });
-            } else {
+            if (result){
               res.status(500).json({
                 message: "Incorrect Password",
               });
