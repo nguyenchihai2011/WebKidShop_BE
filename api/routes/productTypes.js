@@ -20,7 +20,7 @@ router.get("/:id", (req, res) => {
     );
 });
 
-router.post("/", (req, res) => {
+router.post("/create", (req, res) => {
   const productType = new ProductType({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
