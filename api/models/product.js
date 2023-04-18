@@ -4,12 +4,10 @@ const productSchema = mongoose.Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
     name: { type: String, required: true },
-    variation: {
-      size: { type: String, required: true },
-      color: { type: String, required: true },
-      price: { type: Number, required: true },
-      stock: { type: Number, required: true },
-    },
+    size: { type: String, required: true },
+    color: { type: String, required: true },
+    price: { type: Number, required: true },
+    stock: { type: Number, required: true },
     description: { type: String },
     productPic: { type: String, required: true },
     productVideo: { type: String, required: true },
