@@ -8,12 +8,16 @@ const brandSchema = mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         // Kiểm tra giá trị của logo có phải là đường dẫn hợp lệ
-        return (path.isAbsolute(value) || new URL(value).protocol === "http:" || new URL(value).protocol === "https:");
+        return (
+          path.isAbsolute(value) ||
+          new URL(value).protocol === "http:" ||
+          new URL(value).protocol === "https:"
+        );
       },
-      message: "Link or URL must be valid"
-    }
+      message: "Link or URL must be valid",
+    },
   },
   fileLogo: {
     data: Buffer,

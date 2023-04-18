@@ -8,7 +8,10 @@ const Brand = require("../models/brand");
 // Route để tạo mới sản phẩm
 router.post("/create", async (req, res) => {
   try {
-    const newProduct = new Product({ _id: new mongoose.Types.ObjectId(), ...req.body });
+    const newProduct = new Product({
+      _id: new mongoose.Types.ObjectId(),
+      ...req.body,
+    });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
@@ -59,7 +62,9 @@ router.put("/:productId", async (req, res) => {
 // Route để xóa một sản phẩm dựa trên ID
 router.delete("/:productId", async (req, res) => {
   try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.productId);
+    const deletedProduct = await Product.findByIdAndDelete(
+      req.params.productId
+    );
     if (!deletedProduct) {
       return res.status(404).json({ message: "Can not find product" });
     }

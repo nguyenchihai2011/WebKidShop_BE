@@ -47,7 +47,6 @@ router.post("/", upload.single("image"), (req, res) => {
     });
 });
 
-
 router.put("/:id", (req, res) => {
   Brand.findByIdAndUpdate(req.params.id, req.body)
     .then((brand) => res.json({ msg: "Updated successfully" }))
