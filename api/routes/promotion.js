@@ -8,7 +8,7 @@ router.get("/", (req, res) => {
   Promotion.find()
     .then((promotion) => res.json(promotion))
     .catch((err) =>
-      res.status(404).json({ nopromotionsfound: "No promotions found" })
+      res.status(404).json({ NoPromotionsFound: "No promotions found" })
     );
 });
 
@@ -16,7 +16,7 @@ router.get("/:id", (req, res) => {
   Promotion.findById(req.params.id)
     .then((promotion) => res.json(promotion))
     .catch((err) =>
-      res.status(404).json({ nopromotionsfound: "No promotions found" })
+      res.status(404).json({ NoPromotionsFound: "No promotions found" })
     );
 });
 
