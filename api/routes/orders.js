@@ -8,8 +8,8 @@ const CartItem = require("../models/cartItem");
 // Cấu hình Paypal API
 paypal.configure({
   mode: "sandbox", // Chế độ hoạt động của Paypal API (sandbox hoặc live)
-  client_id: "AVu38JPdwRB2w5UUPcqEs5hs7IBagyIXfMiPNeXVqPcty6TJ5JVf3GMjwENnFpU5yM7AeZVky6D2seBK", // Mã client ID của Paypal API
-  client_secret: "ENBAkqiwu1p2cnI7b1Wu9QsakX3XGHcsagsxfMWlXnKqQaE7uhJ3bBAdYjegP4F2NUcJvRrKtFvRiVq6", // Mã client secret của Paypal API
+  client_id: "AQ0oPx58pxQxGQjX34ne0kUHcyvlHDe5-1oPAjRs3o15bxkwOPDO6_Q_MLkxU8P-8vO4cXZLFw2t9bJn", // Mã client ID của Paypal API
+  client_secret: "EKqo7_28R9DA-RV5uSTGlxgjG4xW67N7SLdClUWa7IhE7sr5vd9vlWvsNqwG4eZkxwWRO_k2f13VsMP1", // Mã client secret của Paypal API
 });
 
 // Route để thanh toán giỏ hàng
