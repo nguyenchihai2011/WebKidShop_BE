@@ -59,9 +59,13 @@ router.post("/login", (req, res, next) => {
               message: "Login Failed",
             });
           } else {
-            if (result){
-              res.status(500).json({
+            if (result) {
+              res.status(200).json({
                 message: "Login successfully",
+              });
+            } else {
+              res.status(401).json({
+                message: "Incorrect password",
               });
             }
           }
