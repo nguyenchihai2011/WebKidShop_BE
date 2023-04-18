@@ -3,8 +3,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
+const adminRoute = require("./api/routes/admins")
 const categoryRoute = require("./api/routes/category");
-const productTypeRoute = require("./api/routes/productType");
+const productTypeRoute = require("./api/routes/productTypes");
 const brandRoute = require("./api/routes/brands");
 const promotionRoute = require("./api/routes/promotion");
 const productRoute = require("./api/routes/products");
@@ -23,7 +24,7 @@ app.use(
 );
 
 app.use(cors());
-app.get("/", (req, res) => res.send("Hello world"));
+app.use("/api/admin", adminRoute);
 app.use("/api/category", categoryRoute);
 app.use("/api/productType", productTypeRoute);
 app.use("/api/brand", brandRoute);

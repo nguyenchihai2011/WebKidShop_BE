@@ -22,7 +22,7 @@ router.get("/:id", (req, res) => {
 
 router.post("/", (req, res) => {
   const promotion = new Promotion({
-    _id: mongoose.Types.ObjectId(),
+    _id: new mongoose.Types.ObjectId(),
     startDay: req.body.startDay,
     endDay: req.body.endDay,
     discount: req.body.discount,

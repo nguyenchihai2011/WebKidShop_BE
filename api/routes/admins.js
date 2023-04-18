@@ -1,11 +1,12 @@
 const express = require('express');
+const mongoose = require("mongoose");
 const router = express.Router();
 const bcrypt = require('bcryptjs'); 
 const Admin = require('../models/admin');
 const Staff = require('../models/staff');
 
-// Route thêm tài khoản admin mặc định
-router.post('/admin/create', async (req, res) => {
+// Route thêm tài khoản admin 
+router.post('/create', async (req, res) => {
     try {
         const { email, password } = req.body;
         
@@ -14,6 +15,7 @@ router.post('/admin/create', async (req, res) => {
 
         // Tạo mới admin với email và mật khẩu đã được mã hóa
         const admin = new Admin({
+            _id: new mongoose.Types.ObjectId(),
             email,
             password: hashedPassword
         });
@@ -27,7 +29,7 @@ router.post('/admin/create', async (req, res) => {
 
 
 // Route đăng nhập admin
-router.post('/admin/login', async (req, res, next) => {
+router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         const admin = await Admin.findOne({ email });
@@ -42,17 +44,13 @@ router.post('/admin/login', async (req, res, next) => {
             return res.status(401).json({ message: 'Email or password incorrect' });
         }
 
-        // Kiểm tra email và mật khẩu là 'admin123@gmail.com' và 'admin123'
-        if (email === 'admin123@gmail.com' && password === 'admin123') {
-            next();
-        } else {
-            return res.status(401).json({ message: 'No access permission' });
-        }
+        return res.status(200).json({ message: 'Login successful' });
 
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 
 // Middleware để kiểm tra quyền admin
@@ -70,11 +68,11 @@ router.get('/staff', isAdmin, async (req, res) => {
     }
 });
 
-router.post('/staff', isAdmin, async (req, res) => {
+router.post('/staff/create', isAdmin, async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10); 
         const staff = new Staff({
-            _id: mongoose.Types.ObjectId(),
+            _id: new mongoose.Types.ObjectId(),
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             gender: req.body.gender,

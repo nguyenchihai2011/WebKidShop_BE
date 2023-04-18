@@ -34,7 +34,7 @@ router.get("/:id", (req, res) => {
 
 router.post("/", upload.single("image"), (req, res) => {
   const brand = new Brand({
-    _id: mongoose.Types.ObjectId(),
+    _id: new mongoose.Types.ObjectId(), // Sử dụng new trước mongoose.Types.ObjectId()
     logo: req.body.logo,
     name: req.body.name,
     description: req.body.description,
@@ -46,6 +46,7 @@ router.post("/", upload.single("image"), (req, res) => {
       res.status(404).json({ error: "Unable to add this brand" });
     });
 });
+
 
 router.put("/:id", (req, res) => {
   Brand.findByIdAndUpdate(req.params.id, req.body)
