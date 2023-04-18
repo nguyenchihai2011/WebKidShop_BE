@@ -34,7 +34,7 @@ router.get("/:productId", async (req, res) => {
   try {
     const product = await Product.findById(req.params.productId);
     if (!product) {
-      return res.status(404).json({ message: "Can not find product" });
+      return res.status(404).json({ message: "Cannot find product" });
     }
     res.status(200).json(product);
   } catch (error) {
@@ -51,7 +51,7 @@ router.put("/:productId", async (req, res) => {
       { new: true }
     );
     if (!updatedProduct) {
-      return res.status(404).json({ message: "Can not find product" });
+      return res.status(404).json({ message: "Cannot find product" });
     }
     res.status(200).json(updatedProduct);
   } catch (error) {
@@ -66,7 +66,7 @@ router.delete("/:productId", async (req, res) => {
       req.params.productId
     );
     if (!deletedProduct) {
-      return res.status(404).json({ message: "Can not find product" });
+      return res.status(404).json({ message: "Cannot find product" });
     }
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
