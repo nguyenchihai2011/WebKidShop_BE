@@ -10,6 +10,9 @@ const brandRoute = require("./api/routes/brands");
 const promotionRoute = require("./api/routes/promotion");
 const productRoute = require("./api/routes/products");
 const usersRoute = require("./api/routes/users");
+const addressRoute = require("./api/routes/userAddress");
+const cartRoute = require("./api/routes/cartItems");
+const orderRoute = require("./api/routes/orders");
 
 const app = express();
 // Connect Database
@@ -31,6 +34,9 @@ app.use("/api/brand", brandRoute);
 app.use("/api/promotion", promotionRoute);
 app.use("/api/product", productRoute);
 app.use("/api/user", usersRoute);
+app.use("/api/address", addressRoute);
+app.use("/api/cart", cartRoute);
+app.use("/api/checkout", orderRoute);
 
 const port = process.env.PORT || 8080;
 

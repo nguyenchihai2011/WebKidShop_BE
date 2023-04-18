@@ -5,16 +5,14 @@ const orderSchema = mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   order: [
     {
+      cart: { type: mongoose.Schema.Types.ObjectId, ref: "CartItem" },
       product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      price: { type: Number, required: true },
-      quantity: Number,
+      address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
     },
   ],
-  address: { type: mongoose.Schema.Types.ObjectId, ref: "UserAddress" },
+  note: String ,
+  paymentType:  { type: String, enum: ["COD", "Paypal"] },
   orderDate: { type: Date, default: Date.now() },
-  paymentType: String,
-  paymentStatus: String,
-  isOrderCompleted: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("Order", orderSchema);

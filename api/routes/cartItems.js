@@ -3,127 +3,96 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const CartItem = require("../models/cartItem");
 
-router.post("/add", (req, res, next) => {
-  CartItem.findOne({ user: req.body.user })
-    .exec()
-    .then((cartItem) => {
-      if (cartItem) {
-        const item = cartItem.cart.find(
-          (item) => item.product == req.body.product
-        );
-        let where, action, set;
-        if (item) {
-          action = "$set";
-          where = { user: req.body.user, "cart.product": req.body.product };
-          set = "cart.$";
-        } else {
-          action = "$push";
-          where = { user: req.body.user };
-          set = "cart";
-        }
-
-        CartItem.findOneAndUpdate(where, {
-          [action]: {
-            [set]: {
-              _id: item ? item._id : new mongoose.Types.ObjectId(),
-              product: req.body.product,
-              quantity: item
-                ? item.quantity + req.body.quantity
-                : req.body.quantity,
-              price: req.body.price,
-              total: item
-                ? req.body.price * (req.body.quantity + item.quantity)
-                : req.body.price * req.body.quantity,
-            },
-          },
-        })
-          .exec()
-          .then((newItem) => {
-            res.status(201).json({
-              message: newItem,
-            });
-          })
-          .catch((error) => {
-            res.status(500).json({
-              message: error,
-            });
-          });
-      } else {
-        const newCartItem = new CartItem({
-          _id: new mongoose.Types.ObjectId(),
-          user: req.body.user,
-          cart: [
-            {
-              _id: new mongoose.Types.ObjectId(),
-              product: req.body.product,
-              quantity: req.body.quantity,
-              price: req.body.price,
-              total: req.body.quantity * req.body.price,
-            },
-          ],
-        });
-
-        newCartItem
-          .save()
-          .then((newCart) => {
-            res.status(201).json({
-              message: newCart,
-            });
-          })
-          .catch((error) => {
-            res.status(500).json({
-              error: error,
-            });
-          });
-      }
-    })
-    .catch((error) => {
-      res.status(500).json({
-        error: error,
-      });
-    });
-});
-
-router.post("/user/:userId", (req, res, next) => {
+// Route để lấy thông tin giỏ hàng của người dùng
+router.get("/:userId", async (req, res) => {
   const userId = req.params.userId;
 
-  CartItem.find({ user: userId })
-    .select("_id user cart")
-    .populate("cart.product", "name productPic")
-    .exec()
-    .then((cartItems) => {
-      res.status(200).json({
-        message: cartItems,
-      });
-    });
+  try {
+    // Tìm kiếm giỏ hàng dựa trên ID người dùng
+    const cart = await CartItem.findOne({ user: userId })
+      .populate("user", "_id username") // Lấy thông tin người dùng
+      .populate("cartDetails.product", "_id name price"); // Lấy thông tin sản phẩm trong giỏ hàng 
+
+    if (cart) {
+      res.status(200).json(cart);
+    } else {
+      res
+        .status(404)
+        .json({ message: "Cannot found user" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
 });
 
-router.put("/update/quantity", (req, res, next) => {
-  const userId = req.body.userId;
-  const productId = req.body.productId;
-  const quantity = req.body.quantity;
-  const total = req.body.total;
+// Route để thêm sản phẩm vào giỏ hàng của người dùng
+router.post("/add/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  const productId = req.body.productId; // Lấy thông tin sản phẩm từ request body
 
-  CartItem.update(
-    { user: userId, "cart.product": productId },
-    {
-      $set: {
-        "cart.$.quantity": quantity,
-        "cart.$.total": total,
-      },
+  try {
+    // Tìm kiếm giỏ hàng dựa trên ID người dùng
+    const cart = await CartItem.findOne({ user: userId });
+
+    if (cart) {
+      // Nếu giỏ hàng đã tồn tại, cập nhật thông tin sản phẩm trong giỏ hàng
+      const cartDetails = cart.cartDetails;
+
+      // Tìm kiếm sản phẩm trong giỏ hàng
+      const existingProduct = cartDetails.find(
+        (item) => item.product.toString() === productId
+      );
+
+      if (existingProduct) {
+        // Nếu sản phẩm đã tồn tại trong giỏ hàng, tăng số lượng lên 1
+        existingProduct.quantity += 1;
+      } else {
+        // Nếu sản phẩm chưa tồn tại trong giỏ hàng, thêm sản phẩm mới vào
+        cartDetails.push({ product: productId });
+      }
+
+      await cart.save();
+      res.status(201).json(cart);
+    } else {
+      // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới cho người dùng
+      const newCart = new CartItem({
+        _id: new mongoose.Types.ObjectId(),
+        user: userId,
+        cartDetails: [{ product: productId }],
+      });
+
+      await newCart.save();
+      res.status(200).json(newCart);
     }
-  )
-    .exec()
-    .then((cartItem) => {
-      res.status(201).json({
-        message: cartItem,
-      });
-    })
-    .catch((error) => {
-      res.status(500).json({
-        error: error,
-      });
-    });
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+});
+
+// Route để xóa sản phẩm khỏi giỏ hàng của người dùng
+router.delete("/delete/:userId/:productId", async (req, res) => {
+  const userId = req.params.userId;
+  const productId = req.params.productId;
+
+  try {
+    // Tìm kiếm giỏ hàng dựa trên ID người dùng
+    const cart = await CartItem.findOne({ user: userId });
+
+    if (cart) {
+      // Nếu giỏ hàng tồn tại, xóa sản phẩm trong giỏ hàng dựa trên ID sản phẩm
+      cart.cartDetails = cart.cartDetails.filter(
+        (item) => item.product.toString() !== productId
+      );
+      await cart.save();
+      res.status(201).json(cart);
+    } else {
+      res
+        .status(404)
+        .json({ message: "Cannot found user" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
 });
 
 module.exports = router;

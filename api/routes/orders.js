@@ -1,85 +1,99 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const paypal = require("paypal-rest-sdk");
 const Order = require("../models/order");
 const CartItem = require("../models/cartItem");
-const UserAddress = require("../models/userAddress");
 
-router.post("/create", (req, res, next) => {
-  const order = new Order({
-    _id: new mongoose.Types.ObjectId(),
-    user: req.body.user,
-    order: req.body.order,
-    address: req.body.address,
-    paymentType: req.body.paymentType,
-    paymentStatus: req.body.paymentStatus,
-  });
-
-  order
-    .save()
-    .then((order) => {
-      CartItem.remove({ user: req.body.user })
-        .exec()
-        .then((doc) => {
-          res.status(201).json({
-            message: order,
-          });
-        })
-        .catch((error) => {
-          res.status(500).json({
-            error: error,
-          });
-        });
-    })
-    .catch((error) => {
-      res.status(500).json({
-        error: error,
-      });
-    });
+// Cấu hình Paypal API
+paypal.configure({
+  mode: "sandbox", // Chế độ hoạt động của Paypal API (sandbox hoặc live)
+  client_id: "AVu38JPdwRB2w5UUPcqEs5hs7IBagyIXfMiPNeXVqPcty6TJ5JVf3GMjwENnFpU5yM7AeZVky6D2seBK", // Mã client ID của Paypal API
+  client_secret: "ENBAkqiwu1p2cnI7b1Wu9QsakX3XGHcsagsxfMWlXnKqQaE7uhJ3bBAdYjegP4F2NUcJvRrKtFvRiVq6", // Mã client secret của Paypal API
 });
 
-router.get("/getorders/:userId", (req, res, next) => {
-  const userId = req.params.userId;
-  Order.find({ user: userId })
-    .select(
-      "address order orderDate paymentType paymentStatus isOrderCompleted"
-    )
-    .populate("order.product", "name productPic")
-    .exec()
-    .then((orders) => {
-      UserAddress.findOne({ user: userId })
-        .exec()
-        .then((userAddress) => {
-          const orderWithAddress = orders.map((order) => {
-            const address = userAddress.address.find((userAdd) =>
-              order.address.equals(userAdd._id)
-            );
-            return {
-              _id: order._id,
-              order: order.order,
-              address: address,
-              orderDate: order.orderDate,
-              paymentType: order.paymentType,
-              paymentStatus: order.paymentStatus,
-              isOrderComleted: order.isOrderComleted,
-            };
-          });
+// Route để thanh toán giỏ hàng
+router.post("/", async (req, res) => {
+  try {
+    const { user, order, note, paymentType } = req.body;
 
-          res.status(200).json({
-            message: orderWithAddress,
-          });
-        })
-        .catch((error) => {
-          return res.status(500).json({
-            error: error,
-          });
-        });
-    })
-    .catch((error) => {
-      res.status(500).json({
-        error: error,
+    if (paymentType === "Paypal") {
+      // Xử lý phương thức thanh toán Paypal
+      const create_payment_json = {
+        intent: "sale",
+        payer: {
+          payment_method: "paypal",
+        },
+        redirect_urls: {
+          return_url: "http://localhost:3000/success", // URL khi thanh toán thành công
+          cancel_url: "http://localhost:3000/cancel", // URL khi hủy thanh toán
+        },
+        transactions: [
+          {
+            item_list: {
+              items: [
+                {
+                  name: "Order", // Tên đơn hàng
+                  sku: "order", // SKU của đơn hàng
+                  price: order.totalPrice, // Giá đơn hàng
+                  currency: "USD", // Đơn vị tiền tệ
+                  quantity: 1, // Số lượng
+                },
+              ],
+            },
+            amount: {
+              currency: "USD", // Đơn vị tiền tệ
+              total: order.totalPrice, // Tổng tiền của đơn hàng
+            },
+            description: "Order payment", // Mô tả đơn hàng
+          },
+        ],
+      };
+
+      // Tạo đơn hàng trên Paypal
+      paypal.payment.create(create_payment_json, function (error, payment) {
+        if (error) {
+          throw error;
+        } else {
+          // Redirect đến trang thanh toán của Paypal
+          for (let i = 0; i < payment.links.length; i++) {
+            if (payment.links[i].rel === "approval_url") {
+              return res.redirect(payment.links[i].href);
+            }
+          }
+        }
       });
+    } else if (paymentType === "COD") {
+      const newOrder = new Order({
+        _id: new mongoose.Types.ObjectId(),
+        user,
+        order,
+        note,
+        paymentType,
+      });
+
+      // Lưu đơn hàng vào cơ sở dữ liệu
+      await newOrder.save();
+      return res.status(201).json({
+        success: true,
+        message: "Checkout successfully",
+        order: newOrder,
+      });
+    } else {
+      // Xử lý phương thức thanh toán không hợp lệ
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment type",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something wrong please try again",
+      error: error.message,
     });
+  }
 });
 
 module.exports = router;
