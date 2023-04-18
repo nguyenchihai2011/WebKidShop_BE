@@ -4,7 +4,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 
 const adminRoute = require("./api/routes/admins")
-const categoryRoute = require("./api/routes/category");
+const categoryRoute = require("./api/routes/categories");
 const productTypeRoute = require("./api/routes/productTypes");
 const brandRoute = require("./api/routes/brands");
 const promotionRoute = require("./api/routes/promotion");

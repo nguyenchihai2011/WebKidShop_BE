@@ -1,71 +1,53 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const Category = require('../models/category');
+const Category = require("../models/category");
 
-
-categoryTree = (parentId = "", docs) => {
-    const category = docs.filter(doc => parentId == doc.parent);
-
-
-    var categories = [];
-    for(var cat of category){
-        categories.push({
-            _id: cat._id,
-            name: cat.name,
-            slug: cat.slug,
-            children: categoryTree(cat._id, docs)
-        })
-    }
-
-    return categories;
-
-}
-
-router.get('/', (req, res, next) => {
-
-    Category.find({})
-    .exec()
-    .then(docs => {
-        
-        const categories = categoryTree('', docs);
-
-        res.status(201).json({
-            message: categories
-        });
-    })
-    .catch(er => {
-        res.status(500).json({
-            error: er
-        })
-    });
-
+router.get("/", (req, res) => {
+  Category.find()
+    .then((category) => res.json(category))
+    .catch((err) =>
+      res.status(404).json({ NoCategoriesFound: "No categories found" })
+    );
 });
 
-router.post('/', (req, res, next) => {
+router.get("/:id", (req, res) => {
+  Category.findById(req.params.id)
+    .then((category) => res.json(category))
+    .catch((err) =>
+      res.status(404).json({ NoCategoriesFound: "No categories found" })
+    );
+});
 
-    const category = new Category({
-        _id: new mongoose.Types.ObjectId(),
-        name: req.body.name,
-        slug: req.body.slug,
-        parent: req.body.parent,
-        createdAt: new Date(),
-        createdBy: req.body.createdBy
-    });
+router.post("/", (req, res) => {
+  const category = new Category({
+    _id: new mongoose.Types.ObjectId(),
+    name: req.body.name,
+    description: req.body.description,
+  });
+  return category
+    .save()
+    .then((category) => res.json({ msg: "Category added successfully" }))
+    .catch((err) =>
+      res.status(400).json({ error: "Unable to add this category" })
+    );
+});
 
-    category.save()
-    .then(doc => {
-        res.status(201).json({
-            message: doc
-        });
-    })
-    .catch(er => {
-        res.status(500).json({
-            error: er
-        })
-    });
+router.put("/:id", (req, res) => {
+  Category.findByIdAndUpdate(req.params.id, req.body)
+    .then((category) => res.json({ msg: "Updated successfully" }))
+    .catch((err) =>
+      res.status(400).json({ error: "Unable to update the Database" })
+    );
+});
 
+router.delete("/:id", (req, res) => {
+  Category.findByIdAndRemove(req.params.id, req.body)
+    .then((category) =>
+      res.json({ mgs: "Category entry deleted successfully" })
+    )
+    .catch((err) => res.status(404).json({ error: "No such a category" }));
 });
 
 module.exports = router;
