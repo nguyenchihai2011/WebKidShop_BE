@@ -28,7 +28,8 @@ router.get("/:userId", async (req, res) => {
 // Route để thêm sản phẩm vào giỏ hàng của người dùng
 router.post("/add/:userId", async (req, res) => {
   const userId = req.params.userId;
-  const productId = req.body.productId; // Lấy thông tin sản phẩm từ request body
+  const productId = req.body.productId; 
+  const quantity = req.body.quantity || 1; // Lấy thông tin số lượng sản phẩm từ request body hoặc mặc định bằng 1 nếu không có
 
   try {
     // Tìm kiếm giỏ hàng dựa trên ID người dùng
@@ -44,21 +45,21 @@ router.post("/add/:userId", async (req, res) => {
       );
 
       if (existingProduct) {
-        // Nếu sản phẩm đã tồn tại trong giỏ hàng, tăng số lượng lên 1
-        existingProduct.quantity += 1;
+        // Nếu sản phẩm đã tồn tại trong giỏ hàng, tăng số lượng sản phẩm theo quantity
+        existingProduct.quantity += quantity;
       } else {
-        // Nếu sản phẩm chưa tồn tại trong giỏ hàng, thêm sản phẩm mới vào
-        cartDetails.push({ product: productId });
+        // Nếu sản phẩm chưa tồn tại trong giỏ hàng, thêm sản phẩm mới vào với số lượng là quantity
+        cartDetails.push({ product: productId, quantity: quantity });
       }
 
       await cart.save();
       res.status(201).json(cart);
     } else {
-      // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới cho người dùng
+      // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới cho người dùng và thêm sản phẩm với số lượng là quantity
       const newCart = new CartItem({
         _id: new mongoose.Types.ObjectId(),
         user: user,
-        cartDetails: [{ product: productId }],
+        cartDetails: [{ product: productId, quantity: quantity }],
       });
 
       await newCart.save();
@@ -68,6 +69,7 @@ router.post("/add/:userId", async (req, res) => {
     res.status(500).json({ error: err });
   }
 });
+
 
 // Route để cập nhật số lượng sản phẩm trong giỏ hàng của người dùng
 router.put("/update/:userId/:productId", async (req, res) => {
