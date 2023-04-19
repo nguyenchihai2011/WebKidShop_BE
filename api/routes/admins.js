@@ -87,12 +87,12 @@ router.post("/staff/create", isAdmin, async (req, res) => {
 
 router.put("/staff/:id", isAdmin, async (req, res) => {
   try {
-    const updatedData = {}; 
+    const updatedData = req.body;
     if (req.body.password) {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
       updatedData.password = hashedPassword;
     }
-    const staff = await Staff.findByIdAndUpdate(req.params.id, updatedData);
+    const staff = await Staff.findByIdAndUpdate(req.params.id, updatedData, { new: true });
     res.json({ message: "Updated staff successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

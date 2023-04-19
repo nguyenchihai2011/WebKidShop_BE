@@ -8,14 +8,21 @@ const CartItem = require("../models/cartItem");
 // Cấu hình Paypal API
 paypal.configure({
   mode: "sandbox", // Chế độ hoạt động của Paypal API (sandbox hoặc live)
-  client_id: "AQ0oPx58pxQxGQjX34ne0kUHcyvlHDe5-1oPAjRs3o15bxkwOPDO6_Q_MLkxU8P-8vO4cXZLFw2t9bJn", // Mã client ID của Paypal API
-  client_secret: "EKqo7_28R9DA-RV5uSTGlxgjG4xW67N7SLdClUWa7IhE7sr5vd9vlWvsNqwG4eZkxwWRO_k2f13VsMP1", // Mã client secret của Paypal API
+  client_id:
+    "AQ0oPx58pxQxGQjX34ne0kUHcyvlHDe5-1oPAjRs3o15bxkwOPDO6_Q_MLkxU8P-8vO4cXZLFw2t9bJn", // Mã client ID của Paypal API
+  client_secret:
+    "EKqo7_28R9DA-RV5uSTGlxgjG4xW67N7SLdClUWa7IhE7sr5vd9vlWvsNqwG4eZkxwWRO_k2f13VsMP1", // Mã client secret của Paypal API
 });
 
-// Route để thanh toán giỏ hàng
 router.post("/", async (req, res) => {
   try {
-    const { user, order, note, paymentType } = req.body;
+    const { user, products, note, paymentType } = req.body;
+
+    // Tính tổng tiền
+    const totalPrice = products.reduce(
+      (total, { price, quantity }) => total + price * quantity,
+      0
+    );
 
     if (paymentType === "Paypal") {
       // Xử lý phương thức thanh toán Paypal
@@ -35,7 +42,7 @@ router.post("/", async (req, res) => {
                 {
                   name: "Order", // Tên đơn hàng
                   sku: "order", // SKU của đơn hàng
-                  price: order.totalPrice, // Giá đơn hàng
+                  price: totalPrice, // Giá đơn hàng
                   currency: "USD", // Đơn vị tiền tệ
                   quantity: 1, // Số lượng
                 },
@@ -43,7 +50,7 @@ router.post("/", async (req, res) => {
             },
             amount: {
               currency: "USD", // Đơn vị tiền tệ
-              total: order.totalPrice, // Tổng tiền của đơn hàng
+              total: totalPrice, // Tổng tiền của đơn hàng
             },
             description: "Order payment", // Mô tả đơn hàng
           },
@@ -66,10 +73,15 @@ router.post("/", async (req, res) => {
     } else if (paymentType === "COD") {
       const newOrder = new Order({
         _id: new mongoose.Types.ObjectId(),
-        user,
-        order,
-        note,
-        paymentType,
+        user: userId,
+        order: products.map((p) => ({
+          product: p.product,
+          quantity: p.quantity,
+        })),
+        address: address,
+        note: note,
+        status: "Pending",
+        totalPrice: totalPrice,
       });
 
       // Lưu đơn hàng vào cơ sở dữ liệu
