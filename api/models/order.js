@@ -6,14 +6,13 @@ const orderSchema = mongoose.Schema({
   order: [
     {
       product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      quantity: { type: Number, default: 1 }, 
+      quantity: {type: Number, default: 1 }
     },
   ],
-  address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
-  note: String,
-  totalPrice: { type: Number, required: true },
-  paymentType: { type: String, enum: ["COD", "Paypal"] },
+  address: { type: mongoose.Schema.Types.String, ref: "Address" },
+  note: String ,
   status: { type: String, enum: ["Pending", "Confirmed", "Delivered"] },
+  paymentType:  { type: String, enum: ["COD", "Paypal"] },
   orderDate: { type: Date, default: Date.now() },
 });
 

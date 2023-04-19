@@ -57,7 +57,7 @@ router.post("/add/:userId", async (req, res) => {
       // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới cho người dùng
       const newCart = new CartItem({
         _id: new mongoose.Types.ObjectId(),
-        user: userId,
+        user: user,
         cartDetails: [{ product: productId }],
       });
 
@@ -68,6 +68,41 @@ router.post("/add/:userId", async (req, res) => {
     res.status(500).json({ error: err });
   }
 });
+
+// Route để cập nhật số lượng sản phẩm trong giỏ hàng của người dùng
+router.put("/update/:userId/:productId", async (req, res) => {
+  const userId = req.params.userId;
+  const productId = req.params.productId;
+  const newQuantity = req.body.quantity;
+
+  try {
+    // Tìm kiếm giỏ hàng dựa trên ID người dùng
+    const cart = await CartItem.findOne({ user: userId });
+
+    if (cart) {
+      const cartDetails = cart.cartDetails;
+
+      // Tìm kiếm sản phẩm trong giỏ hàng
+      const existingProduct = cartDetails.find(
+        (item) => item.product.toString() === productId
+      );
+
+      if (existingProduct) {
+        // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng sản phẩm
+        existingProduct.quantity = newQuantity;
+        await cart.save();
+        res.status(201).json(cart);
+      } else {
+        res.status(404).json({ message: "Cannot found product" });
+      }
+    } else {
+      res.status(404).json({ message: "Cannot found user" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+});
+
 
 // Route để xóa sản phẩm khỏi giỏ hàng của người dùng
 router.delete("/delete/:userId/:productId", async (req, res) => {
