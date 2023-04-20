@@ -66,7 +66,7 @@ router.post("/", async (req, res) => {
       const newOrder = new Order({
         _id: new mongoose.Types.ObjectId(),
         user,
-        order,
+        order : order.items.map(item => ({ product: item.product, quantity: item.quantity })),
         address,
         note, 
         status: "Pending",
