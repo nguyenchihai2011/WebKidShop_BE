@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const paypal = require("paypal-rest-sdk");
 const Order = require("../models/order");
 const CartItem = require("../models/cartItem");
+const Product = require('../models/product');
 
 // Cấu hình Paypal API
 paypal.configure({
@@ -130,6 +131,28 @@ router.patch("/:orderId/status", async (req, res) => {
     // Cập nhật status cho đơn hàng
     order.status = status;
     await order.save();
+
+    // Giảm số lượng sản phẩm trong giỏ hàng và giảm stock của product
+    if (status === "Delivered") {
+      const orderItems = order.order;
+      for (const item of orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          product.stock -= item.quantity;
+          await product.save();
+
+          const cartItem = await CartItem.findOne({ product: item.product });
+          if (cartItem) {
+            cartItem.quantity -= item.quantity;
+            if (cartItem.quantity <= 0) {
+              await cartItem.remove();
+            } else {
+              await cartItem.save();
+            }
+          }
+        }
+      }
+    }
 
     return res.status(200).json({
       success: true,
