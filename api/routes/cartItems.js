@@ -70,12 +70,10 @@ router.post("/add/:userId", async (req, res) => {
   }
 });
 
-
 // Route để cập nhật số lượng sản phẩm trong giỏ hàng của người dùng
-router.put("/update/:userId/:productId", async (req, res) => {
+router.put("/update/:userId", async (req, res) => {
   const userId = req.params.userId;
-  const productId = req.params.productId;
-  const newQuantity = req.body.quantity;
+  const cartItems = req.body.cartItems;
 
   try {
     // Tìm kiếm giỏ hàng dựa trên ID người dùng
@@ -84,19 +82,18 @@ router.put("/update/:userId/:productId", async (req, res) => {
     if (cart) {
       const cartDetails = cart.cartDetails;
 
-      // Tìm kiếm sản phẩm trong giỏ hàng
-      const existingProduct = cartDetails.find(
-        (item) => item.product.toString() === productId
-      );
+      // Lặp qua từng sản phẩm trong mảng và cập nhật số lượng sản phẩm
+      cartItems.forEach((item) => {
+        const existingProduct = cartDetails.find(
+          (product) => product.product.toString() === item.productId
+        );
+        if (existingProduct) {
+          existingProduct.quantity = item.quantity;
+        }
+      });
 
-      if (existingProduct) {
-        // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng sản phẩm
-        existingProduct.quantity = newQuantity;
-        await cart.save();
-        res.status(201).json(cart);
-      } else {
-        res.status(404).json({ message: "Cannot found product" });
-      }
+      await cart.save();
+      res.status(201).json(cart);
     } else {
       res.status(404).json({ message: "Cannot found user" });
     }
@@ -104,6 +101,7 @@ router.put("/update/:userId/:productId", async (req, res) => {
     res.status(500).json({ error: err });
   }
 });
+
 
 
 
