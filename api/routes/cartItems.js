@@ -103,8 +103,6 @@ router.put("/update/:userId", async (req, res) => {
 });
 
 
-
-
 // Route để xóa sản phẩm khỏi giỏ hàng của người dùng
 router.delete("/delete/:userId/:productId", async (req, res) => {
   const userId = req.params.userId;
