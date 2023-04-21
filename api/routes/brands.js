@@ -32,7 +32,7 @@ router.get("/:id", (req, res) => {
     });
 });
 
-router.post("/", upload.single("image"), (req, res) => {
+router.post("/create", upload.single("image"), (req, res) => {
   const brand = new Brand({
     _id: new mongoose.Types.ObjectId(), // Sử dụng new trước mongoose.Types.ObjectId()
     logo: req.body.logo,
@@ -47,7 +47,7 @@ router.post("/", upload.single("image"), (req, res) => {
     });
 });
 
-router.put("/:id", (req, res) => {
+router.put("/update/:id", (req, res) => {
   Brand.findByIdAndUpdate(req.params.id, req.body)
     .then((brand) => res.json({ msg: "Updated successfully" }))
     .catch((err) =>
@@ -55,7 +55,7 @@ router.put("/:id", (req, res) => {
     );
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/delete/:id", (req, res) => {
   Brand.findByIdAndRemove(req.params.id, req.body)
     .then((brand) => res.json({ mgs: "Brand entry deleted successfully" }))
     .catch((err) => res.status(404).json({ error: "No such a brand" }));

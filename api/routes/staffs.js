@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const Staff = require("../models/staff");
 
 // Route đăng nhập staff
-router.post("/staff/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const staff = await Staff.findOne({ email }); // Tìm nhân viên theo email

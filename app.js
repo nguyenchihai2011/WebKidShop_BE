@@ -13,6 +13,7 @@ const usersRoute = require("./api/routes/users");
 const addressRoute = require("./api/routes/userAddress");
 const cartRoute = require("./api/routes/cartItems");
 const orderRoute = require("./api/routes/orders");
+const staffRoute = require("./api/routes/staffs");
 
 const app = express();
 // Connect Database
@@ -37,6 +38,7 @@ app.use("/api/user", usersRoute);
 app.use("/api/address", addressRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/checkout", orderRoute);
+app.use("/api/staff", staffRoute);
 
 const port = process.env.PORT || 8080;
 
