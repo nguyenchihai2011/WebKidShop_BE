@@ -15,7 +15,7 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
+  phone: { type: String, required: true },
   createdAt: Date,
   updatedAt: Date,
 });
