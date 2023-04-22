@@ -9,8 +9,8 @@ const productSchema = mongoose.Schema(
     price: { type: Number, required: true },
     stock: { type: Number, required: true },
     description: { type: String },
-    productPic: { type: String, required: true },
-    productVideo: { type: String, required: true },
+    productPic: { type: String },
+    productVideo: { type: String },
     arrivalDate: { type: Date, required: true },
     brand: {
       type: mongoose.Schema.Types.ObjectId,
