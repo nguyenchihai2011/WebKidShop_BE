@@ -24,11 +24,9 @@ router.get("/:userId", async (req, res) => {
     res.status(500).json({ error: err });
   }
 });
-
-// Route để thêm sản phẩm vào giỏ hàng của người dùng
 router.post("/add/:userId", async (req, res) => {
   const userId = req.params.userId;
-  const cartItems = req.body.cartItems; 
+  const { productId, quantity } = req.body;
 
   try {
     // Tìm kiếm giỏ hàng dựa trên ID người dùng
@@ -37,21 +35,18 @@ router.post("/add/:userId", async (req, res) => {
     if (cart) {
       // Nếu giỏ hàng đã tồn tại, cập nhật thông tin sản phẩm trong giỏ hàng
       const cartDetails = cart.cartDetails;
-      for (let i = 0; i < cartItems.length; i++) {
-        const productId = cartItems[i].productId;
-        const quantity = cartItems[i].quantity || 1;
-        const existingProduct = cartDetails.find(
-          (item) => item.product.toString() === productId
-        );
+      const existingProduct = cartDetails.find(
+        (item) => item.product.toString() === productId
+      );
 
-        if (existingProduct) {
-          // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng sản phẩm theo quantity
-          existingProduct.quantity += quantity;
-        } else {
-          // Nếu sản phẩm chưa tồn tại trong giỏ hàng, thêm sản phẩm mới vào với số lượng là quantity
-          cartDetails.push({ product: productId, quantity: quantity });
-        }
+      if (existingProduct) {
+        // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng sản phẩm theo quantity
+        existingProduct.quantity += quantity;
+      } else {
+        // Nếu sản phẩm chưa tồn tại trong giỏ hàng, thêm sản phẩm mới vào với số lượng là quantity
+        cartDetails.push({ product: productId, quantity: quantity });
       }
+
       await cart.save();
       res.status(201).json(cart);
     } else {
@@ -59,13 +54,9 @@ router.post("/add/:userId", async (req, res) => {
       const newCart = new CartItem({
         _id: new mongoose.Types.ObjectId(),
         user: userId,
-        cartDetails: [],
+        cartDetails: [{ product: productId, quantity: quantity }],
       });
-      for (let i = 0; i < cartItems.length; i++) {
-        const productId = cartItems[i].productId;
-        const quantity = cartItems[i].quantity || 1;
-        newCart.cartDetails.push({ product: productId, quantity: quantity });
-      }
+
       await newCart.save();
       res.status(200).json(newCart);
     }
