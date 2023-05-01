@@ -66,20 +66,31 @@ router.post("/", async (req, res) => {
         }
       });
     } else if (paymentType === "COD") {
+      const orderItems = Array.isArray(order) ? await Promise.all(
+        order.map(async (item) => {
+          const product = await Product.findById(item.product);
+          return {
+            product: product._id,
+            name: product.name,
+            brand: product.brand,
+            size: product.size,
+            price: product.price,
+            quantity: item.quantity,
+          };
+        })
+      ) : [];
+
       const newOrder = new Order({
         _id: new mongoose.Types.ObjectId(),
         user,
-        order: order.items.map((item) => ({
-          product: item.product,
-          quantity: item.quantity,
-        })),
+        order: orderItems,
         address,
         note,
         status: "Pending",
         paymentType,
       });
 
-      // Lưu đơn hàng vào cơ sở dữ liệu
+      // Save the order to the database
       await newOrder.save();
       return res.status(201).json({
         success: true,
