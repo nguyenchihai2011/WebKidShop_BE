@@ -15,7 +15,7 @@ const orderSchema = mongoose.Schema({
   ],
   address: { type: mongoose.Schema.Types.String, ref: "userAddress" },
   note: String ,
-  status: { type: String, enum: ["Pending", "Confirmed", "Delivered"] },
+  status: { type: String, enum: ["Pending", "Confirmed", "Reject", "Delivered"] },
   paymentType:  { type: String, enum: ["COD", "Paypal"] },
   orderDate: { type: Date, default: Date.now() },
 });
