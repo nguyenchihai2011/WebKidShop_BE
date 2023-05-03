@@ -16,6 +16,7 @@ const orderRoute = require("./api/routes/orders");
 const staffRoute = require("./api/routes/staffs");
 
 const app = express();
+
 // Connect Database
 connectDB();
 
@@ -39,6 +40,28 @@ app.use("/api/address", addressRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/checkout", orderRoute);
 app.use("/api/staff", staffRoute);
+
+// Connect to MongoDB and schedule promotion cleaner
+const mongoose = require("mongoose");
+const schedule = require("node-schedule");
+const Promotion = require("./api/models/promotion");
+
+mongoose
+  .connect("mongodb+srv://admin:admin@cluster0.bb2dwct.mongodb.net/WebKidShop?retryWrites=true&w=majority", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .catch((err) => console.log(err));
+
+const job = schedule.scheduleJob("0 0 * * *", async function () {
+  console.log("Running promotion cleaner");
+  const now = new Date();
+  const promotionsToDelete = await Promotion.find({
+    endDay: { $lte: now },
+  });
+  console.log(`Found ${promotionsToDelete.length} promotions to delete`);
+  await Promise.all(promotionsToDelete.map((p) => p.remove()));
+});
 
 const port = process.env.PORT || 8080;
 
