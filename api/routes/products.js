@@ -3,7 +3,47 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const Product = require("../models/product");
 const Brand = require("../models/brand");
-const Category = require("../models/category");
+const ProductType= require("../models/productType");
+
+// Route để search sản phẩm
+router.get("/search", async (req, res) => {
+  try {
+    const brandName = req.query.brand;
+    const productTypeName = req.query.productType;
+    const productName = req.query.name;
+    const searchQuery = req.query.search;
+
+    let filter = {};
+    if (brandName) {
+      const brand = await Brand.findOne({ name: brandName });
+      if (brand) {
+        filter.brand = brand._id.toString();
+      } else {
+        return res.status(404).json({ message: "Cannot find brand" });
+      }
+    }
+    if (productTypeName) {
+      const productType = await ProductType.findOne({ name: productTypeName });
+      if (productType) {
+        filter.productType = productType._id.toString();
+      } else {
+        return res.status(404).json({ message: "Invalid product type" });
+      }
+    }
+    if (productName) {
+      filter.name = productName;
+    }
+    if (searchQuery) {
+      filter.name = { $regex: searchQuery, $options: "i" };
+    }
+
+    const products = await Product.find(filter);
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Route để tạo mới sản phẩm
 router.post("/create", async (req, res) => {
@@ -73,27 +113,5 @@ router.delete("/:productId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// Route để search
-router.get("/search", async (req, res) => {
-  const { search } = req.query;
-  try {
-    let query = {};
-    if (search) {
-      query = {
-        $or: [
-          { name: { $regex: search, $options: "i" } },
-          { "brand.name": { $regex: search, $options: "i" } },
-          { "category.name": { $regex: search, $options: "i" } },
-        ]
-      };
-    }
-    const products = await Product.find(query).populate("brand").populate("category");
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 
 module.exports = router;
