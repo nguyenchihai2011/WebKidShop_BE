@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const Product = require("../models/product");
-const Category = require("../models/category");
 const Brand = require("../models/brand");
+const Category = require("../models/category");
 
 // Route để tạo mới sản phẩm
 router.post("/create", async (req, res) => {
@@ -73,5 +73,27 @@ router.delete("/:productId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Route để search
+router.get("/search", async (req, res) => {
+  const { search } = req.query;
+  try {
+    let query = {};
+    if (search) {
+      query = {
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { "brand.name": { $regex: search, $options: "i" } },
+          { "category.name": { $regex: search, $options: "i" } },
+        ]
+      };
+    }
+    const products = await Product.find(query).populate("brand").populate("category");
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 module.exports = router;

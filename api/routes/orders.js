@@ -65,7 +65,7 @@ router.post("/", async (req, res) => {
           }
         }
       });
-    } else if (paymentType === "COD") {
+    } else if (paymentType === "COD" || paymentType === "Paypal") {
       const orderItems = Array.isArray(order)
         ? await Promise.all(
             order.map(async (item) => {
