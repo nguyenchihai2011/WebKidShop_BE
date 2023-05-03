@@ -17,105 +17,48 @@ paypal.configure({
 
 // Route để thanh toán giỏ hàng
 router.post("/", async (req, res) => {
-  try {
-    const { user, order, note, paymentType, address } = req.body;
-    if (paymentType === "Paypal") {
-      // Xử lý phương thức thanh toán Paypal
-      const create_payment_json = {
-        intent: "sale",
-        payer: {
-          payment_method: "paypal",
-        },
-        redirect_urls: {
-          return_url: "http://localhost:3000/success", // URL khi thanh toán thành công
-          cancel_url: "http://localhost:3000/cancel", // URL khi hủy thanh toán
-        },
-        transactions: [
-          {
-            item_list: {
-              items: [
-                {
-                  name: "Order", // Tên đơn hàng
-                  sku: "order", // SKU của đơn hàng
-                  price: order.totalPrice, // Giá đơn hàng
-                  currency: "USD", // Đơn vị tiền tệ
-                  quantity: 1, // Số lượng
-                },
-              ],
-            },
-            amount: {
-              currency: "USD", // Đơn vị tiền tệ
-              total: order.totalPrice, // Tổng tiền của đơn hàng
-            },
-            description: "Order payment", // Mô tả đơn hàng
-          },
-        ],
-      };
+  const { user, order, note, paymentType, address } = req.body;
+  if (Array.isArray(order)) {
+    const orderItems = await Promise.all(
+      order.map(async (item) => {
+        const product = await Product.findById(item.product);
+        return {
+          product: product._id,
+          name: product.name,
+          brand: product.brand,
+          size: product.size,
+          price: product.price,
+          quantity: item.quantity,
+        };
+      })
+    );
 
-      // Tạo đơn hàng trên Paypal
-      paypal.payment.create(create_payment_json, function (error, payment) {
-        if (error) {
-          throw error;
-        } else {
-          // Redirect đến trang thanh toán của Paypal
-          for (let i = 0; i < payment.links.length; i++) {
-            if (payment.links[i].rel === "approval_url") {
-              return res.redirect(payment.links[i].href);
-            }
-          }
-        }
-      });
-    } else if (paymentType === "COD") {
-      if (Array.isArray(order)) {
-        const orderItems = await Promise.all(
-          order.map(async (item) => {
-            const product = await Product.findById(item.product);
-            return {
-              product: product._id,
-              name: product.name,
-              brand: product.brand,
-              size: product.size,
-              price: product.price,
-              quantity: item.quantity,
-            };
-          })
-        );
+    const newOrder = new Order({
+      _id: new mongoose.Types.ObjectId(),
+      user,
+      order: orderItems,
+      address,
+      note,
+      status: "Pending",
+      paymentType,
+    });
 
-        const newOrder = new Order({
-          _id: new mongoose.Types.ObjectId(),
-          user,
-          order: orderItems,
-          address,
-          note,
-          status: "Pending",
-          paymentType,
-        });
-
-        // Save the order to the database
-        await newOrder.save();
-        const productIds = orderItems.map((item) => item.product);
-        await CartItem.deleteMany({
-          user: user,
-          product: { $in: productIds },
-        });
-        return res.status(201).json({
-          success: true,
-          message: "Checkout successfully",
-          order: newOrder,
-        });
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid order format",
-        });
-      }
-    }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
+    // Save the order to the database
+    await newOrder.save();
+    const productIds = orderItems.map((item) => item.product);
+    await CartItem.deleteMany({
+      user: user,
+      product: { $in: productIds },
+    });
+    return res.status(201).json({
+      success: true,
+      message: "Checkout successfully",
+      order: newOrder,
+    });
+  } else {
+    return res.status(400).json({
       success: false,
-      message: "Something wrong please try again",
-      error: error.message,
+      message: "Invalid order format",
     });
   }
 });
@@ -211,6 +154,5 @@ router.get("/", async (req, res) => {
     });
   }
 });
-
 
 module.exports = router;
