@@ -194,4 +194,23 @@ router.patch("/:orderId/status", async (req, res) => {
   }
 });
 
+// Route để lấy tất cả đơn hàng
+router.get("/", async (req, res) => {
+  try {
+    const orders = await Order.find().populate("user", "email").exec();
+    return res.status(200).json({
+      success: true,
+      orders: orders,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something wrong please try again",
+      error: error.message,
+    });
+  }
+});
+
+
 module.exports = router;
