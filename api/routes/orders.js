@@ -155,4 +155,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:userId", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+      throw new Error("Invalid user ID");
+    }
+
+    const userId = new mongoose.Types.ObjectId(req.params.userId);
+    const orders = await Order.find({ user: userId });
+    return res.status(200).json({
+      success: true,
+      orders: orders,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something wrong please try again",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
