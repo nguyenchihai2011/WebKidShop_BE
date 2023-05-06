@@ -110,7 +110,7 @@ router.delete("/staff/:id", isAdmin, async (req, res) => {
 });
 
 //Lấy danh sách User 
-router.get("/getUsers", (req, res, next) => {
+router.get("/getUsers",isAdmin, (req, res, next) => {
   User.find()
     .select("_id firstName lastName email phone createdAt")
     .exec()
