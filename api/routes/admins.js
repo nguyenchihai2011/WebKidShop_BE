@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const Admin = require("../models/admin");
 const Staff = require("../models/staff");
 const User = require("../models/user");
+const Order = require("../models/order");
 
 // Route thêm tài khoản admin
 router.post("/create", async (req, res) => {
@@ -93,7 +94,9 @@ router.put("/staff/:id", isAdmin, async (req, res) => {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
       updatedData.password = hashedPassword;
     }
-    const staff = await Staff.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+    const staff = await Staff.findByIdAndUpdate(req.params.id, updatedData, {
+      new: true,
+    });
     res.json({ message: "Updated staff successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -109,8 +112,8 @@ router.delete("/staff/:id", isAdmin, async (req, res) => {
   }
 });
 
-//Lấy danh sách User 
-router.get("/getUsers",isAdmin, (req, res, next) => {
+//Route lấy danh sách User
+router.get("/getUsers", isAdmin, (req, res, next) => {
   User.find()
     .select("_id firstName lastName email phone createdAt")
     .exec()
@@ -135,6 +138,59 @@ router.get("/getUsers",isAdmin, (req, res, next) => {
     });
 });
 
+// Route để thống kê doanh thu theo tháng
+router.get("/revenue", async (req, res) => {
+  try {
+    const result = await Order.aggregate([
+      { $match: { status: "Delivered" } },
+      {
+        $addFields: {
+          month: {
+            $concat: [
+              {
+                $let: {
+                  vars: {
+                    months: [
+                      "",
+                      "Jan",
+                      "Feb",
+                      "Mar",
+                      "Apr",
+                      "May",
+                      "Jun",
+                      "Jul",
+                      "Aug",
+                      "Sep",
+                      "Oct",
+                      "Nov",
+                      "Dec",
+                    ],
+                  },
+                  in: { $arrayElemAt: ["$$months", { $month: "$orderDate" }] },
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$month",
+          revenue: { $sum: { $size: "$order" } },
+        },
+      },
+      {
+        $sort: {
+          _id: 1,
+        },
+      },
+    ]);
 
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 module.exports = router;
