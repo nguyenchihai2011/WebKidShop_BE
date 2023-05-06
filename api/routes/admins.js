@@ -138,7 +138,7 @@ router.get("/getUsers", isAdmin, (req, res, next) => {
     });
 });
 
-// Route để thống kê doanh thu theo tháng
+// Route để thống kê doanh thu và số lượng đơn hàng trạng thái "Delivered"
 router.get("/revenue", async (req, res) => {
   try {
     const result = await Order.aggregate([
@@ -173,10 +173,12 @@ router.get("/revenue", async (req, res) => {
           },
         },
       },
+      { $unwind: "$order" },
       {
         $group: {
           _id: "$month",
-          revenue: { $sum: { $size: "$order" } },
+          revenue: { $sum: { $multiply: ["$order.price", "$order.quantity"] } },
+          amount: { $sum: 1 },
         },
       },
       {
@@ -189,7 +191,7 @@ router.get("/revenue", async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Cannot get the revenue" });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
