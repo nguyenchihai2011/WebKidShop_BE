@@ -4,6 +4,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const Admin = require("../models/admin");
 const Staff = require("../models/staff");
+const User = require("../models/user");
 
 // Route thêm tài khoản admin
 router.post("/create", async (req, res) => {
@@ -107,5 +108,33 @@ router.delete("/staff/:id", isAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+//Lấy danh sách User 
+router.get("/getUsers", (req, res, next) => {
+  User.find()
+    .select("_id firstName lastName email phone createdAt")
+    .exec()
+    .then((users) => {
+      res.status(200).json({
+        users: users.map((user) => {
+          return {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: user.phone,
+            createdAt: user.createdAt,
+          };
+        }),
+      });
+    })
+    .catch((error) => {
+      res.status(500).json({
+        error: error,
+      });
+    });
+});
+
+
 
 module.exports = router;
