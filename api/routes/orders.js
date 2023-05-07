@@ -106,6 +106,12 @@ router.patch("/:orderId/status", async (req, res) => {
       for (const item of orderItems) {
         const product = await Product.findById(item.product);
         if (product) {
+          if (product.stock === 0) {
+            return res.status(400).json({
+              success: false,
+              message: "Not enough product in stock",
+            });
+          }
           product.stock -= item.quantity;
           await product.save();
 
@@ -131,11 +137,12 @@ router.patch("/:orderId/status", async (req, res) => {
     console.error(error);
     return res.status(500).json({
       success: false,
-      message: "Something wrong please try again",
+      message: "Something went wrong, please try again",
       error: error.message,
     });
   }
 });
+
 
 // Route để lấy tất cả đơn hàng
 router.get("/", async (req, res) => {
@@ -155,6 +162,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+//Route lấy giỏ hàng theo userID
 router.get("/:userId", async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
