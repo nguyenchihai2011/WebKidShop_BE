@@ -75,7 +75,7 @@ router.post("/", async (req, res) => {
 /*
 API cập nhật trạng thái đơn hàng
     {
-      "status": "Confirm"
+      "status": "Confirmed"
     }
     {
       "status": "Cancel"
@@ -103,7 +103,7 @@ router.patch("/:orderId/status", async (req, res) => {
     order.status = status;
 
     // Kiểm tra và cập nhật trạng thái và số lượng sản phẩm
-    if (status === "Confirm") {
+    if (status === "Confirmed") {
       const orderItems = order.order;
       let confirmOrder = true;
 
