@@ -17,51 +17,61 @@ paypal.configure({
 
 // Route để thanh toán giỏ hàng
 router.post("/", async (req, res) => {
-  const { user, order, note, paymentType, address } = req.body;
-  if (Array.isArray(order)) {
-    const orderItems = await Promise.all(
-      order.map(async (item) => {
-        const product = await Product.findById(item.product);
-        return {
-          product: product._id,
-          name: product.name,
-          brand: product.brand,
-          size: product.size,
-          price: product.price,
-          quantity: item.quantity,
-        };
-      })
-    );
+  try {
+    const { user, order, note, paymentType, address } = req.body;
+    if (Array.isArray(order)) {
+      const orderItems = await Promise.all(
+        order.map(async (item) => {
+          const product = await Product.findById(item.product);
+          return {
+            product: product._id,
+            name: product.name,
+            brand: product.brand,
+            size: product.size,
+            price: product.price,
+            quantity: item.quantity,
+          };
+        })
+      );
 
-    const newOrder = new Order({
-      _id: new mongoose.Types.ObjectId(),
-      user,
-      order: orderItems,
-      address,
-      note,
-      status: "Pending",
-      paymentType,
-    });
+      const newOrder = new Order({
+        _id: new mongoose.Types.ObjectId(),
+        user,
+        order: orderItems,
+        address,
+        note,
+        status: "Pending",
+        paymentType,
+      });
 
-    // Save the order to the database
-    await newOrder.save();
-    const productIds = orderItems.map((item) => item.product);
-    await CartItem.deleteMany({
-      user: user,
-      product: { $in: productIds },
-    });
-    return res.status(201).json({
-      success: true,
-      message: "Checkout successfully",
-      order: newOrder,
-    });
-  } else {
-    return res.status(400).json({
+      // Save the order to the database
+      await newOrder.save();
+      const productIds = orderItems.map((item) => item.product);
+      await CartItem.deleteMany({
+        user: user,
+        product: { $in: productIds },
+      });
+      return res.status(201).json({
+        success: true,
+        message: "Checkout successfully",
+        order: newOrder,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order format",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
       success: false,
-      message: "Invalid order format",
+      message: "Something went wrong, please try again",
+      error: error.message,
     });
   }
 });
+
 
 /*
 API cập nhật trạng thái đơn hàng
@@ -107,7 +117,7 @@ router.patch("/:orderId/status", async (req, res) => {
         const product = await Product.findById(item.product);
         if (product) {
           if (product.stock === 0) {
-            return res.status(400).json({
+            return res.status(500).json({
               success: false,
               message: "Not enough product in stock",
             });
