@@ -112,32 +112,6 @@ router.delete("/staff/:id", isAdmin, async (req, res) => {
   }
 });
 
-//Route lấy danh sách User
-router.get("/getUsers", isAdmin, (req, res, next) => {
-  User.find()
-    .select("_id firstName lastName email phone createdAt")
-    .exec()
-    .then((users) => {
-      res.status(200).json({
-        users: users.map((user) => {
-          return {
-            _id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            phone: user.phone,
-            createdAt: user.createdAt,
-          };
-        }),
-      });
-    })
-    .catch((error) => {
-      res.status(500).json({
-        error: error,
-      });
-    });
-});
-
 // Route để thống kê doanh thu và số lượng đơn hàng trạng thái "Delivered"
 router.get("/revenue", async (req, res) => {
   try {
@@ -188,7 +162,41 @@ router.get("/revenue", async (req, res) => {
       },
     ]);
 
-    res.json(result);
+    // Tạo một mảng chứa tên các tháng
+    const months = [
+      "",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    // Tạo một mảng cho tất cả các tháng
+    const allMonthsData = months.map((month) => {
+      return {
+        _id: month,
+        revenue: 0,
+        amount: 0,
+      };
+    });
+
+    // Gộp dữ liệu của các tháng hiện có vào mảng tất cả các tháng
+    result.forEach((data) => {
+      const monthIndex = months.indexOf(data._id);
+      if (monthIndex !== -1) {
+        allMonthsData[monthIndex] = data;
+      }
+    });
+
+    res.json(allMonthsData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
