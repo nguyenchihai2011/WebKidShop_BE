@@ -112,6 +112,32 @@ router.delete("/staff/:id", isAdmin, async (req, res) => {
   }
 });
 
+//Route lấy danh sách User
+router.get("/getUsers", isAdmin, (req, res, next) => {
+  User.find()
+    .select("_id firstName lastName email phone createdAt")
+    .exec()
+    .then((users) => {
+      res.status(200).json({
+        users: users.map((user) => {
+          return {
+            _id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: user.phone,
+            createdAt: user.createdAt,
+          };
+        }),
+      });
+    })
+    .catch((error) => {
+      res.status(500).json({
+        error: error,
+      });
+    });
+});
+
 // Route để thống kê doanh thu và số lượng đơn hàng trạng thái "Delivered"
 router.get("/revenue", async (req, res) => {
   try {
@@ -125,7 +151,6 @@ router.get("/revenue", async (req, res) => {
                 $let: {
                   vars: {
                     months: [
-                      "",
                       "Jan",
                       "Feb",
                       "Mar",
@@ -164,7 +189,6 @@ router.get("/revenue", async (req, res) => {
 
     // Tạo một mảng chứa tên các tháng
     const months = [
-      "",
       "Jan",
       "Feb",
       "Mar",
@@ -199,7 +223,7 @@ router.get("/revenue", async (req, res) => {
     res.json(allMonthsData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Cannot get revenue" });
   }
 });
 
