@@ -72,7 +72,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 /*
 API cập nhật trạng thái đơn hàng
     {
@@ -103,40 +102,64 @@ router.patch("/:orderId/status", async (req, res) => {
     // Cập nhật status cho đơn hàng
     order.status = status;
 
-    // Nếu trạng thái đơn hàng là "Reject", hủy Checkout và chuyển trạng thái thành "Reject"
-    if (status === "Reject") {
-      order.checkout = false;
-    }
-
-    await order.save();
-
-    // Giảm số lượng sản phẩm trong giỏ hàng và giảm stock của product
-    if (status === "Delivered") {
+    // Kiểm tra và cập nhật trạng thái và số lượng sản phẩm
+    if (status === "Confirm") {
       const orderItems = order.order;
+      let confirmOrder = true;
+
       for (const item of orderItems) {
         const product = await Product.findById(item.product);
         if (product) {
-          if (product.stock === 0) {
-            return res.status(500).json({
-              success: false,
-              message: "Not enough product in stock",
-            });
+          if (item.quantity >= product.stock) {
+            confirmOrder = false;
+            break;
           }
           product.stock -= item.quantity;
           await product.save();
+        }
+      }
 
-          const cartItem = await CartItem.findOne({ product: item.product });
-          if (cartItem) {
-            cartItem.quantity -= item.quantity;
-            if (cartItem.quantity <= 0) {
-              await cartItem.remove();
-            } else {
-              await cartItem.save();
-            }
+      if (!confirmOrder) {
+        order.status = "Reject";
+        order.checkout = false;
+        await order.save();
+
+        return res.status(500).json({
+          success: false,
+          message: "Not enough product in stock",
+        });
+      }
+    } else if (status === "Delivered") {
+      const orderItems = order.order;
+      let enoughProduct = true;
+
+      for (const item of orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          if (item.quantity > product.stock) {
+            enoughProduct = false;
+            break;
           }
         }
       }
+
+      if (!enoughProduct) {
+        return res.status(500).json({
+          success: false,
+          message: "Not enough product in stock",
+        });
+      }
+
+      for (const item of orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          product.stock -= item.quantity;
+          await product.save();
+        }
+      }
     }
+
+    await order.save();
 
     return res.status(200).json({
       success: true,
@@ -152,7 +175,6 @@ router.patch("/:orderId/status", async (req, res) => {
     });
   }
 });
-
 
 // Route để lấy tất cả đơn hàng
 router.get("/", async (req, res) => {
