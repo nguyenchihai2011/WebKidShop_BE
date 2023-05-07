@@ -138,7 +138,7 @@ router.get("/getUsers", isAdmin, (req, res, next) => {
     });
 });
 
-// Route để thống kê doanh thu và số lượng đơn hàng trạng thái "Delivered"
+//Route thống kế doanh thu
 router.get("/revenue", async (req, res) => {
   try {
     const result = await Order.aggregate([
@@ -146,29 +146,26 @@ router.get("/revenue", async (req, res) => {
       {
         $addFields: {
           month: {
-            $concat: [
-              {
-                $let: {
-                  vars: {
-                    months: [
-                      "Jan",
-                      "Feb",
-                      "Mar",
-                      "Apr",
-                      "May",
-                      "Jun",
-                      "Jul",
-                      "Aug",
-                      "Sep",
-                      "Oct",
-                      "Nov",
-                      "Dec",
-                    ],
-                  },
-                  in: { $arrayElemAt: ["$$months", { $month: "$orderDate" }] },
-                },
+            $let: {
+              vars: {
+                months: [
+                  "",
+                  "Jan",
+                  "Feb",
+                  "Mar",
+                  "Apr",
+                  "May",
+                  "Jun",
+                  "Jul",
+                  "Aug",
+                  "Sep",
+                  "Oct",
+                  "Nov",
+                  "Dec",
+                ],
               },
-            ],
+              in: { $arrayElemAt: ["$$months", { $month: "$orderDate" }] },
+            },
           },
         },
       },
@@ -178,11 +175,6 @@ router.get("/revenue", async (req, res) => {
           _id: "$month",
           revenue: { $sum: { $multiply: ["$order.price", "$order.quantity"] } },
           amount: { $sum: 1 },
-        },
-      },
-      {
-        $sort: {
-          _id: 1,
         },
       },
     ]);
@@ -205,18 +197,15 @@ router.get("/revenue", async (req, res) => {
 
     // Tạo một mảng cho tất cả các tháng
     const allMonthsData = months.map((month) => {
-      return {
-        _id: month,
-        revenue: 0,
-        amount: 0,
-      };
-    });
-
-    // Gộp dữ liệu của các tháng hiện có vào mảng tất cả các tháng
-    result.forEach((data) => {
-      const monthIndex = months.indexOf(data._id);
-      if (monthIndex !== -1) {
-        allMonthsData[monthIndex] = data;
+      const foundMonth = result.find((data) => data._id === month);
+      if (foundMonth) {
+        return foundMonth;
+      } else {
+        return {
+          _id: month,
+          revenue: 0,
+          amount: 0,
+        };
       }
     });
 
