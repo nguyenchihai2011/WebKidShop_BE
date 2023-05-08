@@ -11,19 +11,19 @@ router.get("/:userId", async (req, res) => {
     // Tìm kiếm giỏ hàng dựa trên ID người dùng
     const cart = await CartItem.findOne({ user: userId })
       .populate("user", "_id username") // Lấy thông tin người dùng
-      .populate("cartDetails.product", "_id name price"); // Lấy thông tin sản phẩm trong giỏ hàng 
+      .populate("cartDetails.product", "_id name price"); // Lấy thông tin sản phẩm trong giỏ hàng
 
     if (cart) {
       res.status(200).json(cart);
     } else {
-      res
-        .status(404)
-        .json({ message: "Cannot found user" });
+      res.status(404).json({ message: "Cannot found user" });
     }
   } catch (err) {
     res.status(500).json({ error: err });
   }
 });
+
+//Route để thêm sản phẩm vào giỏ hàng của user
 router.post("/add/:userId", async (req, res) => {
   const userId = req.params.userId;
   const { productId, quantity } = req.body;
@@ -97,7 +97,6 @@ router.put("/update/:userId", async (req, res) => {
   }
 });
 
-
 // Route để xóa sản phẩm khỏi giỏ hàng của người dùng
 router.delete("/delete/:userId/:productId", async (req, res) => {
   const userId = req.params.userId;
@@ -115,9 +114,7 @@ router.delete("/delete/:userId/:productId", async (req, res) => {
       await cart.save();
       res.status(201).json(cart);
     } else {
-      res
-        .status(404)
-        .json({ message: "Cannot found user" });
+      res.status(404).json({ message: "Cannot found user" });
     }
   } catch (err) {
     res.status(500).json({ error: err });

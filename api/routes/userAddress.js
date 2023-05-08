@@ -17,7 +17,7 @@ router.post("/:userId/create", async (req, res) => {
       addressDoc = new Address({
         _id: new mongoose.Types.ObjectId(),
         user: req.params.userId,
-        addresses: [{ address }]
+        addresses: [{ address }],
       });
     } else {
       addressDoc.addresses.push({ address });
@@ -25,7 +25,9 @@ router.post("/:userId/create", async (req, res) => {
     const savedAddress = await addressDoc.save();
     user.addresses = savedAddress._id;
     await user.save();
-    res.status(201).json({ message: "Create new address successfully", data: savedAddress });
+    res
+      .status(201)
+      .json({ message: "Create new address successfully", data: savedAddress });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -51,7 +53,12 @@ router.put("/:userId/:id", async (req, res) => {
       { new: true }
     );
     if (updatedAddress) {
-      res.status(200).json({ message: "Updated address successfully", data: updatedAddress });
+      res
+        .status(200)
+        .json({
+          message: "Updated address successfully",
+          data: updatedAddress,
+        });
     } else {
       res.status(404).json({ message: "No address found" });
     }
@@ -63,10 +70,20 @@ router.put("/:userId/:id", async (req, res) => {
 // Xóa địa chỉ của người dùng dựa trên ID
 router.delete("/:userId/:id", async (req, res) => {
   try {
-    const deletedAddress = await Address.findOneAndRemove({ _id: req.params.id, user: req.params.userId });
+    const deletedAddress = await Address.findOneAndRemove({
+      _id: req.params.id,
+      user: req.params.userId,
+    });
     if (deletedAddress) {
-      await User.findByIdAndUpdate(req.params.userId, { $pull: { addresses: deletedAddress._id } });
-      res.status(200).json({ message: "Deleted address successfully", data: deletedAddress });
+      await User.findByIdAndUpdate(req.params.userId, {
+        $pull: { addresses: deletedAddress._id },
+      });
+      res
+        .status(200)
+        .json({
+          message: "Deleted address successfully",
+          data: deletedAddress,
+        });
     } else {
       res.status(404).json({ message: "No address found" });
     }

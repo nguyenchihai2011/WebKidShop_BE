@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 
 const Promotion = require("../models/promotion");
 
+//Route lấy toàn bộ khuyến mãi
 router.get("/", (req, res) => {
   Promotion.find()
     .then((promotion) => res.json(promotion))
@@ -12,6 +13,7 @@ router.get("/", (req, res) => {
     );
 });
 
+//Route lấy khuyến mãi theo ID
 router.get("/:id", (req, res) => {
   Promotion.findById(req.params.id)
     .then((promotion) => res.json(promotion))
@@ -20,6 +22,7 @@ router.get("/:id", (req, res) => {
     );
 });
 
+//Route tạo khuyến mãi mới
 router.post("/", (req, res) => {
   const promotion = new Promotion({
     _id: new mongoose.Types.ObjectId(),
@@ -35,6 +38,7 @@ router.post("/", (req, res) => {
     );
 });
 
+//Route cập nhật khuyến mãi
 router.put("/:id", (req, res) => {
   Promotion.findByIdAndUpdate(req.params.id, req.body)
     .then((promotion) => res.json({ msg: "Updated successfully" }))
@@ -43,6 +47,7 @@ router.put("/:id", (req, res) => {
     );
 });
 
+//Route xóa khuyến mãi
 router.delete("/:id", (req, res) => {
   Promotion.findByIdAndRemove(req.params.id, req.body)
     .then((promotion) =>

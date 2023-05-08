@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 
 const User = require("../models/user");
 
+//Route đăng kí tài khoản cho người dùng
 router.post("/signup", (req, res, next) => {
   User.findOne({ email: req.body.email })
     .exec()
@@ -48,6 +49,7 @@ router.post("/signup", (req, res, next) => {
     });
 });
 
+//Route đăng nhập
 router.post("/login", (req, res, next) => {
   User.findOne({ email: req.body.email })
     .exec()
@@ -84,6 +86,7 @@ router.post("/login", (req, res, next) => {
     });
 });
 
+//Route cập nhật thông tin người dùng
 router.put("/:userId", (req, res, next) => {
   const id = req.params.userId;
   const updateOps = {};

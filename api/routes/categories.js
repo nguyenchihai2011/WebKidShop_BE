@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 
 const Category = require("../models/category");
 
+//Route lấy toàn bộ category
 router.get("/", (req, res) => {
   Category.find()
     .then((category) => res.json(category))
@@ -12,6 +13,7 @@ router.get("/", (req, res) => {
     );
 });
 
+//Route lấy category theo ID
 router.get("/:id", (req, res) => {
   Category.findById(req.params.id)
     .then((category) => res.json(category))
@@ -20,6 +22,7 @@ router.get("/:id", (req, res) => {
     );
 });
 
+//Route tạo mới category
 router.post("/create", (req, res) => {
   const category = new Category({
     _id: new mongoose.Types.ObjectId(),
@@ -34,6 +37,7 @@ router.post("/create", (req, res) => {
     );
 });
 
+//route cập nhập category
 router.put("/:id", (req, res) => {
   Category.findByIdAndUpdate(req.params.id, req.body)
     .then((category) => res.json({ msg: "Updated successfully" }))
@@ -42,6 +46,7 @@ router.put("/:id", (req, res) => {
     );
 });
 
+//route xóa category
 router.delete("/:id", (req, res) => {
   Category.findByIdAndRemove(req.params.id, req.body)
     .then((category) =>

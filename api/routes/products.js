@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const Product = require("../models/product");
 const Brand = require("../models/brand");
-const ProductType= require("../models/productType");
+const ProductType = require("../models/productType");
 
 // Route để search sản phẩm
 router.get("/search", async (req, res) => {
@@ -43,7 +43,6 @@ router.get("/search", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // Route để tạo mới sản phẩm
 router.post("/create", async (req, res) => {

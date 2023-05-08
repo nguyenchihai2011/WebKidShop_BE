@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 
 const ProductType = require("../models/productType");
 
+//Route lấy toàn bộ loại sản phẩm
 router.get("/", (req, res) => {
   ProductType.find()
     .then((productType) => res.json(productType))
@@ -12,6 +13,7 @@ router.get("/", (req, res) => {
     );
 });
 
+//Route lấy sản phẩm theo ID
 router.get("/:id", (req, res) => {
   ProductType.findById(req.params.id)
     .then((productType) => res.json(productType))
@@ -20,6 +22,7 @@ router.get("/:id", (req, res) => {
     );
 });
 
+//Route tạo mới loại sản phẩm
 router.post("/create", (req, res) => {
   const productType = new ProductType({
     _id: new mongoose.Types.ObjectId(),
@@ -34,6 +37,7 @@ router.post("/create", (req, res) => {
     );
 });
 
+//Route cập nhật thông tin loại sản phẩm
 router.put("/:id", (req, res) => {
   ProductType.findByIdAndUpdate(req.params.id, req.body)
     .then((productType) => res.json({ msg: "Updated successfully" }))
@@ -42,6 +46,7 @@ router.put("/:id", (req, res) => {
     );
 });
 
+//Route xóa loại sản phẩm
 router.delete("/:id", (req, res) => {
   ProductType.findByIdAndRemove(req.params.id, req.body)
     .then((productType) =>

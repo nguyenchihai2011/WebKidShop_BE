@@ -28,6 +28,7 @@ app.use(
   })
 );
 
+//API
 app.use(cors());
 app.use("/api/admin", adminRoute);
 app.use("/api/category", categoryRoute);
