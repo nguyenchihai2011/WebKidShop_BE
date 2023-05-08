@@ -195,7 +195,7 @@ router.get("/", async (req, res) => {
 });
 
 //Route lấy giỏ hàng theo userID
-router.get("/:userId", async (req, res) => {
+router.get("/user/:userId", async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
       throw new Error("Invalid user ID");
