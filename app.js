@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const Promotion = require("./api/models/promotion");
 
 const adminRoute = require("./api/routes/admins");
 const categoryRoute = require("./api/routes/categories");
@@ -42,27 +43,54 @@ app.use("/api/cart", cartRoute);
 app.use("/api/checkout", orderRoute);
 app.use("/api/staff", staffRoute);
 
-// Connect to MongoDB and schedule promotion cleaner
-const mongoose = require("mongoose");
-const schedule = require("node-schedule");
-const Promotion = require("./api/models/promotion");
-
-mongoose
-  .connect("mongodb+srv://admin:admin@cluster0.bb2dwct.mongodb.net/WebKidShop?retryWrites=true&w=majority", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .catch((err) => console.log(err));
-
-const job = schedule.scheduleJob("0 0 * * *", async function () {
-  console.log("Running promotion cleaner");
+// Hàm để tính toán và cập nhật lại thời gian delay cho lần tiếp theo
+function updateInterval() {
   const now = new Date();
-  const promotionsToDelete = await Promotion.find({
-    endDay: { $lte: now },
-  });
-  console.log(`Found ${promotionsToDelete.length} promotions to delete`);
-  await Promise.all(promotionsToDelete.map((p) => p.remove()));
-});
+  const targetTime = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    24,
+    0
+  ); // Thời gian xóa là 24:00
+  let delay = targetTime - now;
+  if (delay < 0) {
+    // Nếu thời gian xóa đã qua, đặt thời gian delay cho ngày hôm sau
+    delay += 24 * 60 * 60 * 1000; // Thêm 1 ngày (24 giờ)
+  }
+
+  // Cập nhật lại `setInterval` với thời gian delay mới
+  clearInterval(interval);
+  interval = setInterval(deleteExpiredPromotions, delay);
+}
+
+// Xóa khuyến mãi hết hạn tự động
+function deleteExpiredPromotions() {
+  const currentDate = Date.now();
+  Promotion.find({ endDay: { $lt: currentDate } })
+    .then((expiredPromotions) => {
+      if (expiredPromotions.length > 0) {
+        const deletePromotionsPromises = expiredPromotions.map((promotion) =>
+          Promotion.findByIdAndRemove(promotion._id)
+        );
+
+        Promise.all(deletePromotionsPromises)
+          .then(() => {
+            console.log("Expired promotions deleted successfully");
+            updateInterval(); // Cập nhật thời gian delay sau khi xóa thành công
+          })
+          .catch((err) =>
+            console.error("Unable to delete expired promotions", err)
+          );
+      } else {
+        updateInterval(); // Cập nhật thời gian delay khi không có khuyến mãi hết hạn
+      }
+    })
+    .catch((err) => console.error("Unable to get expired promotions", err));
+}
+
+// Bắt đầu chạy `setInterval` ban đầu
+let interval = setInterval(deleteExpiredPromotions, 0);
 
 const port = process.env.PORT || 8080;
 
